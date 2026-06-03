@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecohome Electrical - Smart Invoice Maker</title>
+    <title>Gamma Construction - Smart Invoice Maker</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -13,6 +13,7 @@
             padding: 10px; 
             background: #f4f7f6; 
             color: #333;
+            user-select: none; /* Text copy කිරීම වැළැක්වීමට */
         }
         .invoice-box { 
             max-width: 850px; 
@@ -26,15 +27,37 @@
             display: flex; 
             flex-direction: column;
             gap: 20px;
-            border-bottom: 2px solid #e0e0e0; 
+            border-bottom: 3px solid #f39c12; 
             padding-bottom: 20px; 
             margin-bottom: 25px; 
         }
         .company-section {
             display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            width: 100%;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo-container {
+            width: 90px;
+            height: 90px;
+            border: 2px dashed #f39c12;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #fafafa;
+        }
+        .logo-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .logo-placeholder {
+            font-size: 11px;
+            color: #7f8c8d;
+            text-align: center;
+            font-weight: 600;
         }
 
         .company-inputs input, .company-inputs textarea {
@@ -47,8 +70,8 @@
             border-radius: 4px;
         }
         .company-inputs .comp-name {
-            font-size: 24px;
-            font-weight: bold;
+            font-size: 26px;
+            font-weight: 700;
             color: #2c3e50;
             border-color: transparent;
             padding: 0;
@@ -108,9 +131,19 @@
             padding: 10px; 
             border-bottom: 1px solid #eee; 
         }
-        .item-desc { width: 100%; min-width: 180px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
+        .item-desc { width: 100%; min-width: 250px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
         .num-input { width: 100%; text-align: right; min-width: 70px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
         
+        .amount-word-section {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #fcf8e3;
+            border-left: 5px solid #f39c12;
+            font-size: 13px;
+            font-weight: 600;
+            color: #c0392b;
+        }
+
         .bottom-section {
             display: flex;
             flex-direction: column;
@@ -125,7 +158,7 @@
         }
         .notes-card textarea {
             width: 100%;
-            height: 90px;
+            height: 110px;
             box-sizing: border-box;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -143,7 +176,7 @@
         .totals-row.grand-total {
             font-size: 20px;
             font-weight: 700;
-            color: #27ae60;
+            color: #f39c12;
             border-top: 2px solid #2c3e50;
             border-bottom: none;
             padding-top: 12px;
@@ -164,12 +197,13 @@
             text-align: center;
             transition: 0.2s;
         }
-        .btn-add { background: #e0f2f1; color: #00897b; width: 100%; margin-top: 10px;}
+        .btn-add { background: #fef5e7; color: #d35400; width: 100%; margin-top: 10px;}
+        .btn-add:hover { background: #fdebd0; }
         .btn-remove { background: #ffebee; color: #c62828; padding: 6px 10px; }
-        .btn-print { background: #27ae60; color: white; font-size: 16px; }
+        .btn-print { background: #f39c12; color: white; font-size: 16px; }
+        .btn-print:hover { background: #e67e22; }
         .btn-excel { background: #2980b9; color: white; }
         
-        /* Desktop view optimization */
         @media (min-width: 600px) {
             body { padding: 30px; }
             .header { flex-direction: row; justify-content: space-between; }
@@ -179,37 +213,44 @@
             .actions-grid { grid-template-columns: 1fr 1fr; }
         }
 
-        /* Print Settings */
         @media print {
-            body { background: white; padding: 0; }
+            body { background: white; padding: 0; user-select: auto; }
             .invoice-box { box-shadow: none; padding: 0; border: none; }
             .no-print { display: none !important; }
             input, textarea { border: none !important; background: transparent !important; padding: 0 !important; }
             .meta-row input { text-align: right; }
             .item-desc, .num-input { border: none; padding: 0; }
             .totals-row input { display: none; }
+            .logo-container { border: none; background: transparent; }
         }
     </style>
 </head>
 <body>
 
 <div class="invoice-box">
-    <!-- Header Section -->
     <div class="header">
         <div class="company-section">
+            <div>
+                <div class="logo-container">
+                    <img id="logoImg" src="" style="display:none;">
+                    <div id="logoText" class="logo-placeholder">Upload<br>Logo</div>
+                </div>
+                <input type="file" id="logoFile" accept="image/*" class="no-print" style="font-size: 11px; width: 90px; margin-top: 5px;" onchange="loadLogo(event)">
+            </div>
             <div class="company-inputs" style="flex: 1;">
-                <input type="text" id="compName" class="comp-name" value="Ecohome" oninput="saveProfile()">
-                <input type="text" id="compTag" value="ELECTRICAL ENGINEERING SERVICES" style="font-weight:bold; color:#7f8c8d; border-color:transparent; padding:0; background:transparent; margin-top: 5px;" oninput="saveProfile()">
-                <textarea id="compDetails" rows="3" style="border-color:transparent; padding:0; color:#555; background:transparent; margin-top: 5px;" oninput="saveProfile()" placeholder="Address, Tel, Email">Gampaha,Miriswaththa
-Tel: 076 8310 352 | Email: ecohomeelectrical@gmail.com</textarea>
+                <input type="text" id="compName" class="comp-name" value="Gamma Construction" readonly>
+                <input type="text" id="compTag" value="BUILDING YOUR TRUST WITH QUALITY" style="font-weight:bold; color:#7f8c8d; border-color:transparent; padding:0; background:transparent; margin-top: 5px;" readonly>
+                <textarea id="compDetails" rows="3" style="border-color:transparent; padding:0; color:#555; background:transparent; margin-top: 5px; font-family: inherit; line-height: 1.5;" readonly>ප්‍රධාන ශාඛාව: මිරිස්වත්ත
+Hotline: 074 394 3221 / 077 165 7441
+Email: gammaconstruction@email.com</textarea>
             </div>
         </div>
         
         <div class="invoice-meta">
-            <h2 style="margin: 0 0 10px 0; color: #27ae60; text-align: right; font-size: 28px;">INVOICE</h2>
+            <h2 style="margin: 0 0 10px 0; color: #f39c12; text-align: right; font-size: 28px; letter-spacing: 1px;">INVOICE</h2>
             <div class="meta-row">
                 <label><b>Inv No:</b></label>
-                <input type="text" value="INV-26-0001">
+                <input type="text" id="invoiceNum" value="GMC-26-001" readonly style="font-weight: bold; background: transparent; border: none; text-align: right;">
             </div>
             <div class="meta-row">
                 <label><b>Date:</b></label>
@@ -218,28 +259,26 @@ Tel: 076 8310 352 | Email: ecohomeelectrical@gmail.com</textarea>
         </div>
     </div>
 
-    <!-- Client Info -->
     <div class="bill-to">
-        <h3>Invoice To:</h3>
-        <textarea rows="3" placeholder="Customer Name&#10;Address&#10;Phone Number"></textarea>
+        <h3>Invoice To (Client):</h3>
+        <textarea rows="3" placeholder="Client Name&#10;Project Site Location Address&#10;Contact Number"></textarea>
     </div>
 
-    <!-- Items Table -->
     <div class="table-responsive">
         <table id="invoiceTable">
             <thead>
                 <tr>
-                    <th style="width: 50%">Description of Work / Materials</th>
+                    <th style="width: 55%">Description of Work / Materials (BOQ Item)</th>
                     <th style="width: 10%; text-align: right;">Qty</th>
                     <th style="width: 15%; text-align: right;">Rate (Rs)</th>
-                    <th style="width: 20%; text-align: right;">Amount (Rs)</th>
+                    <th style="width: 15%; text-align: right;">Amount (Rs)</th>
                     <th class="no-print" style="width: 5%"></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td><input type="text" class="item-desc" placeholder="Ex: DB Box installation"></td>
-                    <td><input type="number" class="num-input qty" value="1" min="1" oninput="calculate()"></td>
+                    <td><input type="text" class="item-desc" placeholder="Ex: Concrete Slab Construction / Material Supply"></td>
+                    <td><input type="number" class="num-input qty" value="1" min="0" step="any" oninput="calculate()"></td>
                     <td><input type="number" class="num-input price" value="0" min="0" oninput="calculate()"></td>
                     <td class="row-total" style="text-align: right;">0.00</td>
                     <td class="no-print"><button class="btn btn-remove" onclick="removeRow(this)">X</button></td>
@@ -247,16 +286,18 @@ Tel: 076 8310 352 | Email: ecohomeelectrical@gmail.com</textarea>
             </tbody>
         </table>
     </div>
-    <button class="btn btn-add no-print" onclick="addRow()">+ Add New Line</button>
+    <button class="btn btn-add no-print" onclick="addRow()">+ Add New BOQ Item / Work Line</button>
 
-    <!-- Bottom Breakdown -->
+    <div id="amountInWords" class="amount-word-section">Amount in Words: Rupees Zero Only.</div>
+
     <div class="bottom-section">
         <div class="notes-card">
-            <b style="font-size: 14px; display:block; margin-bottom: 5px;">Notes & Payment Terms:</b>
-            <textarea id="compNotes" oninput="saveProfile()" placeholder="Bank details or Warranty information...">Bank Details: 
-Bank Name: Sampath Bank
-Account No: 1071 5207 9728
-Name:Ecohome </textarea>
+            <b style="font-size: 14px; display:block; margin-bottom: 5px;">Payment Terms & Notes:</b>
+            <textarea id="compNotes" placeholder="Bank details or Warranty information...">Bank Details:
+Bank Name: 
+Account No: 
+Name: Gamma Construction
+Branch: </textarea>
         </div>
         <div class="totals-card">
             <div class="totals-row">
@@ -272,16 +313,15 @@ Name:Ecohome </textarea>
                 <span id="discAmt">0.00</span>
             </div>
             <div class="totals-row grand-total">
-                <span>Total:</span>
+                <span>Total Amount:</span>
                 <span>Rs <span id="grandTotal">0.00</span></span>
             </div>
         </div>
     </div>
 
-    <!-- Actions -->
     <div class="actions-grid no-print">
-        <button class="btn btn-excel" onclick="exportToExcel()">📊 Download Excel (CSV)</button>
-        <button class="btn btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn btn-excel" onclick="exportToExcel()">📊 Download BOQ Data (CSV)</button>
+        <button class="btn btn-print" onclick="triggerPrint()">🖨️ Print / Save PDF</button>
     </div>
 </div>
 
@@ -289,17 +329,35 @@ Name:Ecohome </textarea>
     document.getElementById('invDate').valueAsDate = new Date();
 
     window.onload = function() {
-        if(localStorage.getItem('compName')) document.getElementById('compName').value = localStorage.getItem('compName');
-        if(localStorage.getItem('compTag')) document.getElementById('compTag').value = localStorage.getItem('compTag');
-        if(localStorage.getItem('compDetails')) document.getElementById('compDetails').value = localStorage.getItem('compDetails');
-        if(localStorage.getItem('compNotes')) document.getElementById('compNotes').value = localStorage.getItem('compNotes');
+        // Auto Invoice Number setup
+        if(!localStorage.getItem('gmc_invCounter')) {
+            localStorage.setItem('gmc_invCounter', '1');
+        }
+        updateInvoiceNumberDisplay();
+
+        if(localStorage.getItem('gmc_logoData')) {
+            document.getElementById('logoImg').src = localStorage.getItem('gmc_logoData');
+            document.getElementById('logoImg').style.display = 'block';
+            document.getElementById('logoText').style.display = 'none';
+        }
     }
 
-    function saveProfile() {
-        localStorage.setItem('compName', document.getElementById('compName').value);
-        localStorage.setItem('compTag', document.getElementById('compTag').value);
-        localStorage.setItem('compDetails', document.getElementById('compDetails').value);
-        localStorage.setItem('compNotes', document.getElementById('compNotes').value);
+    function updateInvoiceNumberDisplay() {
+        let count = localStorage.getItem('gmc_invCounter');
+        let paddedCount = count.padStart(3, '0');
+        document.getElementById('invoiceNum').value = `GMC-26-${paddedCount}`;
+    }
+
+    function loadLogo(event) {
+        let reader = new FileReader();
+        reader.onload = function() {
+            let img = document.getElementById('logoImg');
+            img.src = reader.result;
+            img.style.display = 'block';
+            document.getElementById('logoText').style.display = 'none';
+            localStorage.setItem('gmc_logoData', reader.result);
+        }
+        reader.readAsDataURL(event.target.files[0]);
     }
 
     function calculate() {
@@ -309,16 +367,20 @@ Name:Ecohome </textarea>
             let qty = row.querySelector('.qty').value || 0;
             let price = row.querySelector('.price').value || 0;
             let total = parseFloat(qty) * parseFloat(price);
-            row.querySelector('.row-total').innerText = total.toFixed(2);
+            row.querySelector('.row-total').innerText = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             subTotal += total;
         });
-        document.getElementById('subTotal').innerText = subTotal.toFixed(2);
+        document.getElementById('subTotal').innerText = subTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
         let discPer = parseFloat(document.getElementById('discPer').value) || 0;
         let discAmt = subTotal * (discPer / 100);
-        document.getElementById('discAmt').innerText = "-" + discAmt.toFixed(2);
+        document.getElementById('discAmt').innerText = "-" + discAmt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         
-        document.getElementById('grandTotal').innerText = (subTotal - discAmt).toFixed(2);
+        let grandTotal = subTotal - discAmt;
+        document.getElementById('grandTotal').innerText = grandTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        // Convert Grand Total to Words
+        document.getElementById('amountInWords').innerText = "Amount in Words: " + numberToWords(Math.round(grandTotal)) + " Only.";
     }
 
     function addRow() {
@@ -326,7 +388,7 @@ Name:Ecohome </textarea>
         let tr = document.createElement('tr');
         tr.innerHTML = `
             <td><input type="text" class="item-desc" placeholder="Item description"></td>
-            <td><input type="number" class="num-input qty" value="1" min="1" oninput="calculate()"></td>
+            <td><input type="number" class="num-input qty" value="1" min="0" step="any" oninput="calculate()"></td>
             <td><input type="number" class="num-input price" value="0" min="0" oninput="calculate()"></td>
             <td class="row-total" style="text-align: right;">0.00</td>
             <td class="no-print"><button class="btn btn-remove" onclick="removeRow(this)">X</button></td>
@@ -337,6 +399,14 @@ Name:Ecohome </textarea>
     function removeRow(btn) {
         btn.closest('tr').remove();
         calculate();
+    }
+
+    function triggerPrint() {
+        window.print();
+        // පින්ට් කිරීමෙන් පසු ඉන්වොයිස් අංකය එකකින් වැඩි කර සේව් කරයි
+        let currentCount = parseInt(localStorage.getItem('gmc_invCounter'));
+        localStorage.setItem('gmc_invCounter', (currentCount + 1).toString());
+        updateInvoiceNumberDisplay();
     }
 
     function exportToExcel() {
@@ -353,10 +423,53 @@ Name:Ecohome </textarea>
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "Invoice_Data.csv");
+        link.setAttribute("download", `Gamma_Construction_${document.getElementById('invoiceNum').value}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    // Number to Words Converter Function
+    function numberToWords(num) {
+        if (num === 0) return 'Rupees Zero';
+        const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        
+        function g(n) {
+            if (n < 20) return a[n];
+            let d = n % 10;
+            return b[Math.floor(n / 10)] + (d ? ' ' + a[d] : '');
+        }
+        function h(n) {
+            if (n === 0) return '';
+            let t = Math.floor(n / 100);
+            let r = n % 100;
+            return (t ? a[t] + ' Hundred ' : '') + (r ? g(r) : '');
+        }
+        let str = 'Rupees ';
+        let k = Math.floor(num / 10000000);
+        let m = Math.floor((num % 10000000) / 100000);
+        let t = Math.floor((num % 100000) / 1000);
+        let r = num % 1000;
+        
+        if (k) str += h(k) + ' Crore ';
+        if (m) str += h(m) + ' Lakh ';
+        if (t) str += h(t) + ' Thousand ';
+        if (r) str += h(r);
+        return str.replace(/\s+/g, ' ').trim();
+    }
+
+    // Security Features: කේතය සොරකම් කිරීම වැළැක්වීමට (Anti-Theft Features)
+    document.addEventListener('contextmenu', event => event.preventDefault()); // Right Click Block
+    
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123) return false; // F12 Block
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Inspect Element Block
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; 
+        if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; 
+        if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // View Source Block
+        if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; // Save Page Block
+        if (e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) return false; // Direct Print Block
     }
 </script>
 
